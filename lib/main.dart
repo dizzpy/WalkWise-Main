@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:walkwise/screens/auth/auth_home.dart';
+import 'package:walkwise/screens/auth/auth_gate.dart';
 import 'package:walkwise/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:walkwise/providers/auth_provider.dart';
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'WalkWise',
         theme: AppTheme.lightTheme,
-        home: const AuthHome(),
+        home: const AuthGate(),
         debugShowCheckedModeBanner: false,
       ),
     );
