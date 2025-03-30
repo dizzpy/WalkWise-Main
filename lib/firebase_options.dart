@@ -29,19 +29,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDLg193AwryQYE9czVLr8lJhJT8_mELgnE',
-    appId: '1:802814727533:android:4f01dbd4dbe4d01e6d3664',
-    messagingSenderId: '802814727533',
-    projectId: 'walkwise-v2',
-    storageBucket: 'walkwise-v2.firebasestorage.app',
+    apiKey: String.fromEnvironment('ANDROID_API_KEY'),
+    appId: String.fromEnvironment('ANDROID_APP_ID'),
+    messagingSenderId: String.fromEnvironment('ANDROID_MESSAGING_SENDER_ID'),
+    projectId: String.fromEnvironment('ANDROID_PROJECT_ID'),
+    storageBucket: String.fromEnvironment('ANDROID_STORAGE_BUCKET'),
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDsjUodS4q_C3geYOMIeFnlJ1ZMUcM4zZo',
-    appId: '1:802814727533:ios:e7230d0e03c585486d3664',
-    messagingSenderId: '802814727533',
-    projectId: 'walkwise-v2',
-    storageBucket: 'walkwise-v2.firebasestorage.app',
-    iosBundleId: 'dev.dizzpy.walkwise',
+    apiKey: String.fromEnvironment('IOS_API_KEY'),
+    appId: String.fromEnvironment('IOS_APP_ID'),
+    messagingSenderId: String.fromEnvironment('IOS_MESSAGING_SENDER_ID'),
+    projectId: String.fromEnvironment('IOS_PROJECT_ID'),
+    storageBucket: String.fromEnvironment('IOS_STORAGE_BUCKET'),
+    iosBundleId: String.fromEnvironment('IOS_BUNDLE_ID'),
   );
 }
