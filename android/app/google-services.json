@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "802814727533",
+    "project_id": "walkwise-v2",
+    "storage_bucket": "walkwise-v2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:802814727533:android:4f01dbd4dbe4d01e6d3664",
+        "android_client_info": {
+          "package_name": "dev.dizzpy.walkwise"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLg193AwryQYE9czVLr8lJhJT8_mELgnE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
