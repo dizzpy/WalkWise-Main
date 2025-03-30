@@ -64,4 +64,16 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+
+// Logout User
+  Future<bool> logout() async {
+    try {
+      await _authService.signOut();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
 }

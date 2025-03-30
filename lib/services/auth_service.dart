@@ -55,13 +55,13 @@ class AuthService {
 
   // Create User Data in Firestore
   Future<void> createUserData({
-    required String uid, // Use UID instead of email
+    required String uid,
     required String email,
     required String fullName,
   }) async {
     try {
       print('Creating Firestore document for user: $email');
-      final userDoc = _firestore.collection('Users').doc(uid); // Use UID
+      final userDoc = _firestore.collection('Users').doc(uid);
 
       // Check if the document already exists
       final docSnapshot = await userDoc.get();
