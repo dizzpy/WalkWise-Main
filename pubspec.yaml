@@ -30,4 +30,12 @@ flutter:
   uses-material-design: true
   assets:
     - .env
+  
+  fonts:
+    - family: Lufga
+      fonts:
+        - asset: assets/fonts/LufgaMedium.ttf
+          weight: 400
+        - asset: assets/fonts/LufgaRegular.ttf
+          weight: 500
 
