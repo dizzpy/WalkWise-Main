@@ -3,25 +3,32 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:walkwise/screens/auth/auth_home.dart';
 import 'package:walkwise/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:walkwise/providers/auth_provider.dart';
 import 'firebase_options.dart';
 
-void main() async {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load();
+
+  await _initializeFirebase(); // Ensuring proper Firebase initialization
+
+  runApp(const MyApp());
+}
+
+Future<void> _initializeFirebase() async {
   try {
-    WidgetsFlutterBinding.ensureInitialized();
-    // First load environment variables
-    await dotenv.load();
-
-    // Then initialize Firebase
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-
-    runApp(const MyApp());
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } on FirebaseException catch (e) {
+    if (e.code != 'duplicate-app') {
+      rethrow; // Only rethrow if it's NOT a duplicate-app issue
+    }
   } catch (e) {
-    // ignore: avoid_print
-    print('Initialization error: $e');
-    // Still run the app even if there's an initialization error
-    runApp(const MyApp());
+    rethrow; // Catch any other errors
   }
 }
 
@@ -30,11 +37,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'WalkWise',
-      theme: AppTheme.lightTheme,
-      home: const AuthHome(),
-      debugShowCheckedModeBanner: false,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+      ],
+      child: MaterialApp(
+        title: 'WalkWise',
+        theme: AppTheme.lightTheme,
+        home: const AuthHome(),
+        debugShowCheckedModeBanner: false,
+      ),
     );
   }
 }

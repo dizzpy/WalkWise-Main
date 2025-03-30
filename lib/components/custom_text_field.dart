@@ -3,82 +3,40 @@ import 'package:flutter/material.dart';
 class CustomTextField extends StatelessWidget {
   final TextEditingController controller;
   final String labelText;
+  final TextInputType? keyboardType;
+  final bool obscureText;
+  final Function(String)? onChanged;
   final String? Function(String?)? validator;
-  final TextInputType keyboardType;
 
   const CustomTextField({
-    super.key,
+    Key? key,
     required this.controller,
     required this.labelText,
+    this.keyboardType,
+    this.obscureText = false,
+    this.onChanged,
     this.validator,
-    this.keyboardType = TextInputType.text,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.outline.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: controller,
-        decoration: InputDecoration(
-          labelText: labelText,
-          labelStyle: TextStyle(
-            color: theme.colorScheme.secondary,
-            fontSize: 14,
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 16,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: theme.colorScheme.outline,
-              width: 1,
-            ),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: theme.colorScheme.outline,
-              width: 1,
-            ),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: theme.colorScheme.primary,
-              width: 1.5,
-            ),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: theme.colorScheme.error,
-              width: 1,
-            ),
-          ),
-          filled: true,
-          fillColor: theme.colorScheme.surface,
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
         ),
-        keyboardType: keyboardType,
-        validator: validator,
-        style: TextStyle(
-          color: theme.textTheme.bodyLarge?.color,
-          fontSize: 16,
+        errorStyle: const TextStyle(height: 0.8),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
         ),
       ),
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      onChanged: onChanged,
+      validator: validator,
     );
   }
 }

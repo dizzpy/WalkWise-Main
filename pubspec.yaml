@@ -6,18 +6,18 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'  # Updated SDK constraint
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
   cupertino_icons: ^1.0.2
-  firebase_core: ^2.32.0
-  cloud_firestore: ^4.14.0
+  firebase_core: ^3.12.1
+  cloud_firestore: ^5.6.5
   supabase: ^2.0.0
-  flutter_dotenv: ^5.1.0
-  firebase_auth: ^4.16.0
+  flutter_dotenv: ^5.2.1
+  firebase_auth: ^5.5.1
   provider: ^6.1.4
 
 dev_dependencies:
