@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:walkwise/components/custom_button.dart';
 import 'package:walkwise/components/custom_text_field.dart';
 import 'package:walkwise/providers/auth_provider.dart';
-import 'package:walkwise/screens/main/home_page.dart';
+import 'package:walkwise/screens/navigations/dashboard.dart';
 import 'package:walkwise/utils/alert_utils.dart';
 
 class RegisterSheet extends StatefulWidget {

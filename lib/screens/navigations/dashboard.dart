@@ -20,11 +20,19 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   int selectedIndex = 0;
 
-  final List<Widget> tabItems = const [
-    HomePage(),
-    MapPage(),
-    SuggestPlaces(),
-    SettingsPage(),
+  final List<Widget> tabItems = [
+    Center(
+      child: HomePage(),
+    ),
+    Center(
+      child: MapPage(),
+    ),
+    Center(
+      child: SuggestPlaces(),
+    ),
+    Center(
+      child: SettingsPage(),
+    ),
   ];
 
   @override
