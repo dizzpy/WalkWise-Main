@@ -40,12 +40,12 @@ class AuthProvider extends ChangeNotifier {
           email, password, fullName);
 
       if (userCredential.user != null) {
-        final uid = userCredential.user!.uid; // Fetch UID
+        final uid = userCredential.user!.uid;
         print('FirebaseAuth user created successfully for: $email (UID: $uid)');
 
         print('Attempting to create Firestore document for user: $email');
         await _authService.createUserData(
-          uid: uid, // Use UID
+          uid: uid,
           email: email,
           fullName: fullName,
         );
@@ -69,6 +69,8 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> logout() async {
     try {
       await _authService.signOut();
+      _isLoading = false;
+      notifyListeners();
       return true;
     } catch (e) {
       _error = e.toString();

@@ -11,7 +11,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
 
-  await _initializeFirebase(); // Ensuring proper Firebase initialization
+  await _initializeFirebase();
 
   runApp(const MyApp());
 }
@@ -25,10 +25,10 @@ Future<void> _initializeFirebase() async {
     }
   } on FirebaseException catch (e) {
     if (e.code != 'duplicate-app') {
-      rethrow; // Only rethrow if it's NOT a duplicate-app issue
+      rethrow;
     }
   } catch (e) {
-    rethrow; // Catch any other errors
+    rethrow;
   }
 }
 
