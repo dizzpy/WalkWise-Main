@@ -22,6 +22,11 @@ dependencies:
   flashy_tab_bar2: ^0.0.10
   flutter_svg: ^2.0.9
 
+  google_maps_flutter: ^2.5.0
+
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -42,3 +47,4 @@ flutter:
         - asset: assets/fonts/LufgaRegular.ttf
           weight: 500
 
+  
