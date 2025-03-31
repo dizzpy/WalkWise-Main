@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:walkwise/components/custom_button.dart';
 import 'package:walkwise/components/custom_text_field.dart';
 import 'package:walkwise/providers/auth_provider.dart';
-import 'package:walkwise/screens/dashboard/dashboard_page.dart';
 
 class LoginSheet extends StatefulWidget {
   const LoginSheet({super.key});
@@ -68,14 +67,7 @@ class _LoginSheetState extends State<LoginSheet> {
                         _passwordController.text,
                       );
 
-                      if (success && context.mounted) {
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const DashboardPage(),
-                          ),
-                          (route) => false,
-                        );
-                      } else if (context.mounted) {
+                      if (!success && context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(authProvider.error ?? 'Login failed'),
