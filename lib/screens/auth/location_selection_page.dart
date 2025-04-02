@@ -26,6 +26,27 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
   bool _isLoading = false;
   bool _showMap = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _initializeMap();
+  }
+
+  void _initializeMap() {
+    final user = context.read<UserProvider>().user;
+    if (user?.latitude != null && user?.longitude != null) {
+      setState(() {
+        _selectedMapLocation = LatLng(user!.latitude!, user.longitude!);
+        _selectedPlace = Place(
+          displayName: user.location,
+          lat: user.latitude.toString(),
+          lon: user.longitude.toString(),
+        );
+        _searchController.text = user.location;
+      });
+    }
+  }
+
   Future<void> _searchPlaces(String query) async {
     setState(() => _isLoading = true);
     try {
@@ -107,64 +128,94 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
   }
 
   Widget _buildMapView() {
+    final user = context.watch<UserProvider>().user;
+    final userLocation = user?.latitude != null && user?.longitude != null
+        ? LatLng(user!.latitude!, user.longitude!)
+        : LatLng(6.901022685210251, 81.34012272850336); // Default coordinates
+
     // Sri Lanka's approximate bounds
     final sriLankaBounds = LatLngBounds(
-      LatLng(5.916667, 79.516667), // Southwest corner
-      LatLng(9.850000, 81.900000), // Northeast corner
+      LatLng(5.916667, 79.516667),
+      LatLng(9.850000, 81.900000),
     );
 
-    return FlutterMap(
-      mapController: _mapController,
-      options: MapOptions(
-        initialCenter: LatLng(7.873054, 80.771797), // Center of Sri Lanka
-        initialZoom: 7.5,
-        minZoom: 7.0,
-        maxZoom: 18.0,
-        interactionOptions: const InteractionOptions(
-          flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-        ),
-        cameraConstraint: CameraConstraint.contain(
-            bounds: sriLankaBounds), // Fixed bounds parameter
-        onTap: (tapPosition, point) async {
-          // Only allow taps within Sri Lanka bounds
-          if (sriLankaBounds.contains(point)) {
-            setState(() => _selectedMapLocation = point);
-            final locationName =
-                await _locationService.getLocationNameFromCoords(
-              point.latitude,
-              point.longitude,
-            );
-            setState(() {
-              _selectedPlace = Place(
-                displayName: locationName,
-                lat: point.latitude.toString(),
-                lon: point.longitude.toString(),
-              );
-              _searchController.text = locationName;
-            });
-          }
-        },
-      ),
+    return Stack(
       children: [
-        TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-          userAgentPackageName: 'com.example.app',
-        ),
-        if (_selectedMapLocation != null)
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: _selectedMapLocation!,
-                width: 40,
-                height: 30,
-                child: const Icon(
-                  Icons.location_pin,
-                  color: AppColors.primary,
-                  size: 40,
-                ),
-              ),
-            ],
+        FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: userLocation,
+            initialZoom: 12.0, // Increased zoom level
+            minZoom: 7.0,
+            maxZoom: 18.0,
+            interactionOptions: const InteractionOptions(
+              flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+            ),
+            cameraConstraint: CameraConstraint.contain(bounds: sriLankaBounds),
+            onTap: (tapPosition, point) async {
+              if (sriLankaBounds.contains(point)) {
+                setState(() => _selectedMapLocation = point);
+                final locationName =
+                    await _locationService.getLocationNameFromCoords(
+                  point.latitude,
+                  point.longitude,
+                );
+                setState(() {
+                  _selectedPlace = Place(
+                    displayName: locationName,
+                    lat: point.latitude.toString(),
+                    lon: point.longitude.toString(),
+                  );
+                  _searchController.text = locationName;
+                });
+              }
+            },
           ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.app',
+            ),
+            MarkerLayer(
+              markers: [
+                // Current location marker (blue)
+                Marker(
+                  point: userLocation,
+                  width: 40,
+                  height: 40,
+                  child: const Icon(
+                    Icons.my_location,
+                    color: Colors.blue,
+                    size: 40,
+                  ),
+                ),
+                // Selected location marker (if different from current location)
+                if (_selectedMapLocation != null &&
+                    _selectedMapLocation != userLocation)
+                  Marker(
+                    point: _selectedMapLocation!,
+                    width: 40,
+                    height: 40,
+                    child: const Icon(
+                      Icons.location_pin,
+                      color: AppColors.primary,
+                      size: 40,
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton(
+            onPressed: () {
+              _mapController.move(userLocation, 12.0);
+            },
+            child: const Icon(Icons.my_location),
+          ),
+        ),
       ],
     );
   }
