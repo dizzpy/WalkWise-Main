@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:walkwise/screens/places/add_place_page.dart';
 import '../../providers/user_provider.dart';
 
 class MapPage extends StatefulWidget {
@@ -78,12 +79,46 @@ class _MapPageState extends State<MapPage> {
         ),
         Positioned(
           right: 16,
-          bottom: 16,
+          bottom: 100, // Increased spacing
           child: FloatingActionButton(
+            heroTag: "btn1", // Add hero tags to prevent conflicts
+            backgroundColor: Colors.black,
             onPressed: () {
               _mapController.move(userLocation, 15.0);
             },
-            child: const Icon(Icons.my_location),
+            child: const Icon(
+              Icons.my_location,
+              color: Colors.white,
+              size: 26,
+            ),
+          ),
+        ),
+        Positioned(
+          right: 16,
+          bottom: 16,
+          child: FloatingActionButton(
+            heroTag: "btn2",
+            backgroundColor: Colors.black,
+            onPressed: () {
+              // Temporarily show a snackbar until AddPlacePage is implemented
+              // ScaffoldMessenger.of(context).showSnackBar(
+              //   const SnackBar(
+              //     content: Text('Add Place feature coming soon!'),
+              //   ),
+              // );
+              // Uncomment this when AddPlacePage is ready
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddPlacePage(),
+                ),
+              );
+            },
+            child: const Icon(
+              Icons.add_location_alt,
+              color: Colors.white,
+              size: 26,
+            ),
           ),
         ),
       ],
