@@ -29,4 +29,13 @@ class UserService {
       return null;
     }
   }
+
+  Future<void> logout() async {
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      print('Error during logout: $e');
+      rethrow;
+    }
+  }
 }
