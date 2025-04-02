@@ -35,9 +35,11 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
     if (_selectedPlace == null) return;
 
     try {
-      await context
-          .read<UserProvider>()
-          .updateLocation(_selectedPlace!.displayName);
+      await context.read<UserProvider>().updateLocation(
+            _selectedPlace!.displayName,
+            double.parse(_selectedPlace!.lat),
+            double.parse(_selectedPlace!.lon),
+          );
       if (mounted) {
         Navigator.pushReplacement(
           context,

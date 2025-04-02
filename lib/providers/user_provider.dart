@@ -40,15 +40,19 @@ class UserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateLocation(String location) async {
-    if (_user == null) return;
-
-    _loading = true;
-    notifyListeners();
-
+  Future<void> updateLocation(
+      String location, double latitude, double longitude) async {
     try {
-      await _userService.updateLocation(_user!.id, location);
-      _user = _user?.copyWith(location: location);
+      _loading = true;
+      notifyListeners();
+
+      await _userService.updateLocation(
+          _user!.id, location, latitude, longitude);
+      _user = _user?.copyWith(
+        location: location,
+        latitude: latitude,
+        longitude: longitude,
+      );
     } catch (e) {
       print('Error updating location: $e');
       rethrow;

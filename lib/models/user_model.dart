@@ -8,6 +8,8 @@ class UserModel {
   final DateTime? createdAt;
   final List<String> interests;
   final String location;
+  final double? latitude;
+  final double? longitude;
 
   UserModel({
     required this.id,
@@ -17,6 +19,8 @@ class UserModel {
     this.createdAt,
     this.interests = const [],
     this.location = 'New York, USA',
+    this.latitude,
+    this.longitude,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -28,6 +32,8 @@ class UserModel {
       createdAt: (json['createdAt'] as Timestamp?)?.toDate(),
       interests: List<String>.from(json['interests'] ?? []),
       location: json['location'] ?? 'New York, USA',
+      latitude: json['latitude']?.toDouble(),
+      longitude: json['longitude']?.toDouble(),
     );
   }
 
@@ -39,6 +45,8 @@ class UserModel {
     DateTime? createdAt,
     List<String>? interests,
     String? location,
+    double? latitude,
+    double? longitude,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -48,6 +56,22 @@ class UserModel {
       createdAt: createdAt ?? this.createdAt,
       interests: interests ?? this.interests,
       location: location ?? this.location,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'fullName': fullName,
+      'email': email,
+      'profileImgLink': profileImgLink,
+      'createdAt': createdAt?.toIso8601String(),
+      'interests': interests,
+      'location': location,
+      'latitude': latitude,
+      'longitude': longitude,
+    };
   }
 }

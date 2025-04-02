@@ -39,10 +39,13 @@ class UserService {
     }
   }
 
-  Future<void> updateLocation(String userId, String location) async {
+  Future<void> updateLocation(
+      String userId, String location, double latitude, double longitude) async {
     try {
       await _firestore.collection('Users').doc(userId).update({
         'location': location,
+        'latitude': latitude,
+        'longitude': longitude,
       });
     } catch (e) {
       print('Error updating location: $e');
