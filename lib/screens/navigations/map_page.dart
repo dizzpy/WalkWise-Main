@@ -4,6 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:walkwise/screens/places/add_place_page.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/place_provider.dart';
+import '../../models/place_model.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -15,8 +17,22 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   final MapController _mapController = MapController();
 
+  @override
+  void initState() {
+    super.initState();
+    // Use addPostFrameCallback to avoid build phase conflicts
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPlaces();
+    });
+  }
+
+  Future<void> _loadPlaces() async {
+    await context.read<PlaceProvider>().loadPlaces();
+  }
+
   Widget _buildMapView() {
     final user = context.watch<UserProvider>().user;
+    final places = context.watch<PlaceProvider>().places;
     final userLocation = user?.latitude != null && user?.longitude != null
         ? LatLng(user!.latitude!, user.longitude!)
         : LatLng(6.901022685210251, 81.34012272850336); // Default coordinates
@@ -48,6 +64,7 @@ class _MapPageState extends State<MapPage> {
             ),
             MarkerLayer(
               markers: [
+                // User location marker
                 Marker(
                   point: userLocation,
                   width: 50,
@@ -69,6 +86,22 @@ class _MapPageState extends State<MapPage> {
                             width: 2,
                           ),
                         ),
+                      ),
+                    ),
+                  ),
+                ),
+                // Place markers
+                ...places.map(
+                  (place) => Marker(
+                    point: LatLng(place.latitude, place.longitude),
+                    width: 40,
+                    height: 40,
+                    child: GestureDetector(
+                      onTap: () => _showPlaceDetails(place),
+                      child: const Icon(
+                        Icons.place,
+                        color: Colors.red,
+                        size: 40,
                       ),
                     ),
                   ),
@@ -122,6 +155,40 @@ class _MapPageState extends State<MapPage> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showPlaceDetails(PlaceModel place) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              place.name,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(place.description),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: place.tags
+                  .map((tag) => Chip(
+                        label: Text(tag),
+                        backgroundColor: Colors.grey[200],
+                      ))
+                  .toList(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

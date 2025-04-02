@@ -6,6 +6,7 @@ import 'package:walkwise/theme/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:walkwise/providers/auth_provider.dart';
 import 'package:walkwise/providers/user_provider.dart';
+import 'package:walkwise/providers/place_provider.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => PlaceProvider()),
       ],
       child: MaterialApp(
         title: 'WalkWise',

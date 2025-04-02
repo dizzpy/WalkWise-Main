@@ -19,22 +19,27 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
   LatLng? _selectedLocation;
   String? _selectedAddress;
   bool _isLoading = false;
+  bool _isMapReady = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeMap();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeMap();
+    });
   }
 
   void _initializeMap() {
     final user = context.read<UserProvider>().user;
-    if (user?.latitude != null && user?.longitude != null) {
+    if (user?.latitude != null && user?.longitude != null && _isMapReady) {
       _moveToLocation(LatLng(user!.latitude!, user.longitude!));
     }
   }
 
   void _moveToLocation(LatLng location) {
-    _mapController.move(location, 15.0);
+    if (_isMapReady) {
+      _mapController.move(location, 15.0);
+    }
   }
 
   Future<void> _getAddressForLocation(LatLng location) async {
@@ -70,6 +75,10 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             options: MapOptions(
               initialCenter: userLocation,
               initialZoom: 15.0,
+              onMapReady: () {
+                setState(() => _isMapReady = true);
+                _initializeMap();
+              },
               onTap: (tapPosition, point) {
                 setState(() => _selectedLocation = point);
                 _getAddressForLocation(point);
@@ -128,7 +137,11 @@ class _LocationPickerPageState extends State<LocationPickerPage> {
             bottom: 100,
             child: FloatingActionButton(
               backgroundColor: Colors.black,
-              onPressed: () => _moveToLocation(userLocation),
+              onPressed: () {
+                if (_isMapReady) {
+                  _moveToLocation(userLocation);
+                }
+              },
               child: const Icon(Icons.my_location, color: Colors.white),
             ),
           ),

@@ -4,7 +4,9 @@ import 'package:latlong2/latlong.dart';
 import '../../components/custom_button.dart';
 import '../../components/custom_text_field.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/place_provider.dart';
 import 'location_picker_page.dart';
+import '../../models/place_model.dart';
 
 class AddPlacePage extends StatefulWidget {
   const AddPlacePage({super.key});
@@ -20,6 +22,7 @@ class _AddPlacePageState extends State<AddPlacePage> {
   final _descriptionController = TextEditingController();
   LatLng? _selectedLocation;
   String? _selectedLocationName;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -27,6 +30,53 @@ class _AddPlacePageState extends State<AddPlacePage> {
     _tagsController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _savePlaceData() async {
+    if (!_formKey.currentState!.validate() || _selectedLocation == null) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final user = context.read<UserProvider>().user;
+      if (user == null) throw Exception('User not logged in');
+
+      final tags = _tagsController.text
+          .split(',')
+          .map((tag) => tag.trim())
+          .where((tag) => tag.isNotEmpty)
+          .toList();
+
+      final place = PlaceModel(
+        id: '', // Will be set by Firestore
+        name: _nameController.text,
+        description: _descriptionController.text,
+        latitude: _selectedLocation!.latitude,
+        longitude: _selectedLocation!.longitude,
+        tags: tags,
+        addedBy: user.id,
+        addedDate: DateTime.now(),
+        address: _selectedLocationName ?? '',
+      );
+
+      await context.read<PlaceProvider>().addPlace(place);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Place added successfully!')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error adding place: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   Widget _buildLocationSelector() {
@@ -187,15 +237,10 @@ class _AddPlacePageState extends State<AddPlacePage> {
               _buildLocationSelector(),
               const SizedBox(height: 32),
               CustomButton(
-                onPressed: _selectedLocation == null
+                onPressed: _selectedLocation == null || _isLoading
                     ? null
-                    : () {
-                        if (_formKey.currentState!.validate()) {
-                          // TODO: Implement save functionality
-                          Navigator.pop(context);
-                        }
-                      },
-                text: 'Add Place',
+                    : _savePlaceData,
+                text: _isLoading ? 'Adding Place...' : 'Add Place',
               ),
             ],
           ),
