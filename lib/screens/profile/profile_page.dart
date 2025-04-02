@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:walkwise/models/user_model.dart';
 import '../../constants/app_assets.dart';
 import '../../constants/colors.dart';
 import '../../components/custom_icon_button.dart';
@@ -7,6 +8,7 @@ import '../../components/custom_segmented_control.dart';
 import '../../components/place_card.dart';
 import '../../providers/user_provider.dart';
 import '../../components/skeleton_loading.dart';
+import 'edit_profile_bottom_sheet.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -25,6 +27,15 @@ class _ProfilePageState extends State<ProfilePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<UserProvider>().loadUser();
     });
+  }
+
+  void _showEditProfileBottomSheet(UserModel user) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditProfileBottomSheet(user: user),
+    );
   }
 
   Widget _buildLoadingState() {
@@ -68,6 +79,30 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildLocationInfo(String location) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.location_on_outlined,
+            size: 16,
+            color: AppColors.textSecondary,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            location,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
@@ -106,7 +141,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   CustomIconButton(
                     icon: AppAssets.editIcon,
                     onPressed: () {
-                      // Add edit profile logic here
+                      if (user != null) {
+                        _showEditProfileBottomSheet(user);
+                      }
                     },
                   ),
                 ],
@@ -144,7 +181,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         color: AppColors.text,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 8),
+                    if (user != null) _buildLocationInfo(user.location),
+                    const SizedBox(height: 24), // Adjusted spacing
                     CustomSegmentedControl(
                       selectedIndex: _selectedIndex,
                       segments: const ['Added Places', 'Last Viewed'],

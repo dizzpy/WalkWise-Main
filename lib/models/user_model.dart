@@ -7,6 +7,7 @@ class UserModel {
   final String profileImgLink;
   final DateTime? createdAt;
   final List<String> interests;
+  final String location;
 
   UserModel({
     required this.id,
@@ -15,6 +16,7 @@ class UserModel {
     this.profileImgLink = '',
     this.createdAt,
     this.interests = const [],
+    this.location = 'New York, USA',
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class UserModel {
       profileImgLink: json['profileImgLink'] ?? '',
       createdAt: (json['createdAt'] as Timestamp?)?.toDate(),
       interests: List<String>.from(json['interests'] ?? []),
+      location: json['location'] ?? 'New York, USA',
     );
   }
 }
