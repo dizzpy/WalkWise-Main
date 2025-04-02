@@ -109,6 +109,45 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  Widget _buildSettingsItem({
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.outline),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.textSecondary,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(
@@ -199,26 +238,24 @@ class _SettingsPageState extends State<SettingsPage> {
               Expanded(
                 child: ListView(
                   children: [
+                    const SizedBox(height: 8),
                     _buildSettingsItem(
-                      icon: Icons.notifications,
                       title: 'Notifications',
                       onTap: () {},
                     ),
                     _buildSettingsItem(
-                      icon: Icons.lock,
                       title: 'Privacy',
                       onTap: () {},
                     ),
                     _buildSettingsItem(
-                      icon: Icons.help,
                       title: 'Help & Support',
                       onTap: () {},
                     ),
                     _buildSettingsItem(
-                      icon: Icons.info,
                       title: 'About',
                       onTap: () {},
                     ),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -236,19 +273,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSettingsItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: onTap,
     );
   }
 }
