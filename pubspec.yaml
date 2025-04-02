@@ -22,6 +22,8 @@ dependencies:
   flashy_tab_bar2: ^0.0.10
   flutter_svg: ^2.0.9
   http: ^1.1.0
+  latlong2: ^0.9.1
+  flutter_map: ^7.0.2
 
 dev_dependencies:
   flutter_test:

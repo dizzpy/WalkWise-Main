@@ -19,6 +19,21 @@ class LocationService {
     }
     return [];
   }
+
+  Future<String> getLocationNameFromCoords(double lat, double lon) async {
+    final response = await http.get(
+      Uri.parse(
+        'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon',
+      ),
+      headers: {'Accept': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      return result['display_name'];
+    }
+    return 'Unknown Location';
+  }
 }
 
 class Place {

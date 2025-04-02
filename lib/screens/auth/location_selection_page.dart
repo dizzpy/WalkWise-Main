@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../constants/colors.dart';
 import '../../components/custom_button.dart';
 import '../../services/location_service.dart';
@@ -17,9 +19,12 @@ class LocationSelectionPage extends StatefulWidget {
 class _LocationSelectionPageState extends State<LocationSelectionPage> {
   final LocationService _locationService = LocationService();
   final TextEditingController _searchController = TextEditingController();
+  final MapController _mapController = MapController();
   List<Place> _searchResults = [];
   Place? _selectedPlace;
+  LatLng? _selectedMapLocation;
   bool _isLoading = false;
+  bool _showMap = false;
 
   Future<void> _searchPlaces(String query) async {
     setState(() => _isLoading = true);
@@ -101,6 +106,69 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
     );
   }
 
+  Widget _buildMapView() {
+    // Sri Lanka's approximate bounds
+    final sriLankaBounds = LatLngBounds(
+      LatLng(5.916667, 79.516667), // Southwest corner
+      LatLng(9.850000, 81.900000), // Northeast corner
+    );
+
+    return FlutterMap(
+      mapController: _mapController,
+      options: MapOptions(
+        initialCenter: LatLng(7.873054, 80.771797), // Center of Sri Lanka
+        initialZoom: 7.5,
+        minZoom: 7.0,
+        maxZoom: 18.0,
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+        ),
+        cameraConstraint: CameraConstraint.contain(
+            bounds: sriLankaBounds), // Fixed bounds parameter
+        onTap: (tapPosition, point) async {
+          // Only allow taps within Sri Lanka bounds
+          if (sriLankaBounds.contains(point)) {
+            setState(() => _selectedMapLocation = point);
+            final locationName =
+                await _locationService.getLocationNameFromCoords(
+              point.latitude,
+              point.longitude,
+            );
+            setState(() {
+              _selectedPlace = Place(
+                displayName: locationName,
+                lat: point.latitude.toString(),
+                lon: point.longitude.toString(),
+              );
+              _searchController.text = locationName;
+            });
+          }
+        },
+      ),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.example.app',
+        ),
+        if (_selectedMapLocation != null)
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: _selectedMapLocation!,
+                width: 40,
+                height: 30,
+                child: const Icon(
+                  Icons.location_pin,
+                  color: AppColors.primary,
+                  size: 40,
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -111,51 +179,64 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Select Your Location',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: 'Search location...',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Select Your Location',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
                   ),
-                ),
-                onChanged: (value) {
-                  if (value.length >= 3) {
-                    _searchPlaces(value);
-                  }
-                },
+                  IconButton(
+                    icon: Icon(_showMap ? Icons.search : Icons.map),
+                    onPressed: () => setState(() => _showMap = !_showMap),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
-              Expanded(
-                child: _isLoading
-                    ? _buildLoadingSkeletons()
-                    : ListView.builder(
-                        itemCount: _searchResults.length,
-                        itemBuilder: (context, index) {
-                          final place = _searchResults[index];
-                          return ListTile(
-                            title: Text(place.displayName),
-                            onTap: () {
-                              setState(() {
-                                _selectedPlace = place;
-                                _searchController.text = place.displayName;
-                                _searchResults = [];
-                              });
-                            },
-                          );
-                        },
-                      ),
-              ),
+              if (!_showMap) ...[
+                TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search location...',
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onChanged: (value) {
+                    if (value.length >= 3) {
+                      _searchPlaces(value);
+                    }
+                  },
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: _isLoading
+                      ? _buildLoadingSkeletons()
+                      : ListView.builder(
+                          itemCount: _searchResults.length,
+                          itemBuilder: (context, index) {
+                            final place = _searchResults[index];
+                            return ListTile(
+                              title: Text(place.displayName),
+                              onTap: () {
+                                setState(() {
+                                  _selectedPlace = place;
+                                  _searchController.text = place.displayName;
+                                  _searchResults = [];
+                                });
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ] else ...[
+                Expanded(child: _buildMapView()),
+              ],
               CustomButton(
                 onPressed:
                     _selectedPlace != null ? () => _handleContinue() : null,
@@ -185,6 +266,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
   @override
   void dispose() {
     _searchController.dispose();
+    _mapController.dispose();
     super.dispose();
   }
 }
