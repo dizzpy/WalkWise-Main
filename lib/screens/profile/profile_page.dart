@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:walkwise/models/user_model.dart';
+import 'package:walkwise/screens/auth/location_selection_page.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../constants/app_assets.dart';
 import '../../constants/colors.dart';
 import '../../components/custom_icon_button.dart';
@@ -36,6 +38,10 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundColor: Colors.transparent,
       builder: (context) => EditProfileBottomSheet(user: user),
     );
+  }
+
+  String _formatLocation(String location) {
+    return location.split(',').first.trim();
   }
 
   Widget _buildLoadingState() {
@@ -79,26 +85,102 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildLocationInfo(String location) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.location_on_outlined,
-            size: 16,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            location,
-            style: const TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
+  Widget _buildLocationInfo(UserModel? user) {
+    if (user == null) return const SizedBox.shrink();
+
+    if (user.location.isEmpty || user.location == 'New York, USA') {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        child: Material(
+          color: AppColors.background,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const LocationSelectionPage()),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.outline),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset(
+                    AppAssets.mapIcon,
+                    width: 20,
+                    height: 20,
+                    color: AppColors.primary.withOpacity(0.8),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Set your location',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Material(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        elevation: 0,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const LocationSelectionPage()),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.outline),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SvgPicture.asset(
+                  AppAssets.locationPinIcon,
+                  width: 20,
+                  height: 20,
+                  color: AppColors.primary.withOpacity(0.8),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    _formatLocation(user.location),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.text,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -182,7 +264,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    if (user != null) _buildLocationInfo(user.location),
+                    _buildLocationInfo(user),
                     const SizedBox(height: 24), // Adjusted spacing
                     CustomSegmentedControl(
                       selectedIndex: _selectedIndex,

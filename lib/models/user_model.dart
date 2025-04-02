@@ -30,4 +30,24 @@ class UserModel {
       location: json['location'] ?? 'New York, USA',
     );
   }
+
+  UserModel copyWith({
+    String? id,
+    String? fullName,
+    String? email,
+    String? profileImgLink,
+    DateTime? createdAt,
+    List<String>? interests,
+    String? location,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      profileImgLink: profileImgLink ?? this.profileImgLink,
+      createdAt: createdAt ?? this.createdAt,
+      interests: interests ?? this.interests,
+      location: location ?? this.location,
+    );
+  }
 }

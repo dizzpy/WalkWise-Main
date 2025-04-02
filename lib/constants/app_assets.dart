@@ -11,4 +11,8 @@ class AppAssets {
 
   // card icons
   static const starIcons = "assets/icons/star.svg";
+
+  // Location Icons
+  static const mapIcon = "assets/icons/location.svg";
+  static const locationPinIcon = "assets/icons/location.svg";
 }
