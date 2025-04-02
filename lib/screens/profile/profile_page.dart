@@ -6,6 +6,7 @@ import '../../components/custom_icon_button.dart';
 import '../../components/custom_segmented_control.dart';
 import '../../components/place_card.dart';
 import '../../providers/user_provider.dart';
+import '../../components/skeleton_loading.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -24,6 +25,47 @@ class _ProfilePageState extends State<ProfilePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<UserProvider>().loadUser();
     });
+  }
+
+  Widget _buildLoadingState() {
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+        const SkeletonLoading(
+          width: 130,
+          height: 130,
+          borderRadius: 44,
+        ),
+        const SizedBox(height: 16),
+        const SkeletonLoading(width: 150, height: 24),
+        const SizedBox(height: 24),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: const SkeletonLoading(
+            width: double.infinity,
+            height: 50,
+            borderRadius: 12,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Expanded(
+          child: ListView.builder(
+            itemCount: 2,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemBuilder: (context, index) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: const SkeletonLoading(
+                  width: double.infinity,
+                  height: 80,
+                  borderRadius: 12,
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -72,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           body: loading
-              ? const Center(child: CircularProgressIndicator())
+              ? _buildLoadingState()
               : Column(
                   children: [
                     const SizedBox(height: 24),

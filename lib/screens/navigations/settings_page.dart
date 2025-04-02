@@ -4,6 +4,7 @@ import '../profile/profile_page.dart';
 import '../../constants/colors.dart';
 import '../../components/custom_button.dart';
 import '../../providers/user_provider.dart';
+import '../../components/skeleton_loading.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -76,6 +77,38 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Widget _buildLoadingState() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.outline),
+      ),
+      child: Row(
+        children: [
+          const SkeletonLoading(
+            width: 60,
+            height: 60,
+            borderRadius: 30,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                SkeletonLoading(width: 120, height: 20),
+                SizedBox(height: 8),
+                SkeletonLoading(width: 180, height: 16),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<UserProvider>(
@@ -94,7 +127,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               // Profile Card
               loading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? _buildLoadingState()
                   : InkWell(
                       onTap: () {
                         Navigator.push(
