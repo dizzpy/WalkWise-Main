@@ -30,6 +30,22 @@ class UserService {
     }
   }
 
+  Future<UserModel?> getUserById(String userId) async {
+    try {
+      final doc = await _firestore.collection('Users').doc(userId).get();
+      if (doc.exists) {
+        return UserModel.fromJson({
+          'id': doc.id,
+          ...doc.data()!,
+        });
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching user by ID: $e');
+      return null;
+    }
+  }
+
   Future<void> logout() async {
     try {
       await _auth.signOut();

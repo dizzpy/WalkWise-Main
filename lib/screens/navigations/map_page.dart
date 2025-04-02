@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
-import 'package:walkwise/screens/places/add_place_page.dart';
+import 'package:latlong2/latlong.dart' hide DistanceCalculator;
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/place_provider.dart';
 import '../../models/place_model.dart';
+import '../../screens/places/add_place_page.dart';
+import '../../components/place_details_sheet.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -28,6 +30,13 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> _loadPlaces() async {
     await context.read<PlaceProvider>().loadPlaces();
+  }
+
+  Future<void> _openInGoogleMaps(double lat, double lng) async {
+    final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    }
   }
 
   Widget _buildMapView() {
@@ -161,33 +170,11 @@ class _MapPageState extends State<MapPage> {
   void _showPlaceDetails(PlaceModel place) {
     showModalBottomSheet(
       context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              place.name,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(place.description),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              children: place.tags
-                  .map((tag) => Chip(
-                        label: Text(tag),
-                        backgroundColor: Colors.grey[200],
-                      ))
-                  .toList(),
-            ),
-          ],
-        ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PlaceDetailsSheet(
+        place: place,
+        onOpenInGoogleMaps: _openInGoogleMaps,
       ),
     );
   }
