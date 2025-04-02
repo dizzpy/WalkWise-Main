@@ -10,7 +10,7 @@ class SuggestPlaces extends StatelessWidget {
         title: const Text('Suggest Places'),
       ),
       body: const Center(
-        child: Text('Welcome to the Suggest Places Page!'),
+        child: Text('Welcome to the Suggest Places Page !'),
       ),
     );
   }
