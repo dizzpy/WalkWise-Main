@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:walkwise/constants/colors.dart';
 
 class SearchField extends StatelessWidget {
   const SearchField({super.key});

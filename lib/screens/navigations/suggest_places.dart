@@ -1,4 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:walkwise/constants/colors.dart';
 import 'package:walkwise/screens/navigations/add_place_page.dart';
