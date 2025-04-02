@@ -5,6 +5,7 @@ import '../../components/custom_button.dart';
 import '../../services/location_service.dart';
 import '../../providers/user_provider.dart';
 import '../navigations/dashboard.dart';
+import '../../components/skeleton_loading.dart';
 
 class LocationSelectionPage extends StatefulWidget {
   const LocationSelectionPage({super.key});
@@ -59,6 +60,45 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
     }
   }
 
+  Widget _buildLoadingSkeletons() {
+    return ListView.builder(
+      itemCount: 3,
+      itemBuilder: (context, index) {
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          child: const Row(
+            children: [
+              SkeletonLoading(
+                width: 40,
+                height: 40,
+                borderRadius: 20,
+              ),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonLoading(
+                      width: double.infinity,
+                      height: 16,
+                      borderRadius: 8,
+                    ),
+                    SizedBox(height: 8),
+                    SkeletonLoading(
+                      width: 150,
+                      height: 12,
+                      borderRadius: 6,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,7 +136,7 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
               const SizedBox(height: 16),
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? _buildLoadingSkeletons()
                     : ListView.builder(
                         itemCount: _searchResults.length,
                         itemBuilder: (context, index) {
@@ -115,7 +155,8 @@ class _LocationSelectionPageState extends State<LocationSelectionPage> {
                       ),
               ),
               CustomButton(
-                onPressed: _selectedPlace != null ? () => _handleContinue() : null,
+                onPressed:
+                    _selectedPlace != null ? () => _handleContinue() : null,
                 text: 'Continue',
               ),
               const SizedBox(height: 16),
