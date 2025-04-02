@@ -181,6 +181,12 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _showPlaceDetails(PlaceModel place) {
+    // Track view when opened from map pin
+    final user = context.read<UserProvider>().user;
+    if (user != null) {
+      context.read<PlaceProvider>().addToLastViewed(user.id, place.id);
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

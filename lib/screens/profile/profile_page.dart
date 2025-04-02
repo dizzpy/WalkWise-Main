@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:walkwise/models/place_model.dart';
 import 'package:walkwise/models/user_model.dart';
 import 'package:walkwise/screens/auth/location_selection_page.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../constants/app_assets.dart';
 import '../../constants/colors.dart';
 import '../../components/custom_icon_button.dart';
 import '../../components/custom_segmented_control.dart';
-import '../../components/place_card.dart';
 import '../../providers/user_provider.dart';
+import '../../providers/place_provider.dart';
 import '../../components/skeleton_loading.dart';
+import '../../components/suggested_place_card.dart';
+import '../../components/place_details_sheet.dart';
 import 'edit_profile_bottom_sheet.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -23,12 +27,27 @@ class _ProfilePageState extends State<ProfilePage> {
   int _selectedIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<UserProvider>().loadUser();
+      final user = context.read<UserProvider>().user;
+      if (user != null) {
+        await Future.wait([
+          context.read<PlaceProvider>().loadPlaces(),
+          context.read<PlaceProvider>().loadLastViewedPlaces(user.id),
+        ]);
+      }
+    });
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Move loadUser to didChangeDependencies
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<UserProvider>().loadUser();
-    });
   }
 
   void _showEditProfileBottomSheet(UserModel user) {
@@ -37,6 +56,36 @@ class _ProfilePageState extends State<ProfilePage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => EditProfileBottomSheet(user: user),
+    );
+  }
+
+  void _showPlaceDetails(place) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => PlaceDetailsSheet(
+        place: place,
+        onOpenInGoogleMaps: (lat, lng) async {
+          final url = Uri.parse(
+              'https://www.google.com/maps/search/?api=1&query=$lat,$lng');
+          try {
+            if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Could not open Google Maps')),
+                );
+              }
+            }
+          } catch (e) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Error opening Google Maps')),
+              );
+            }
+          }
+        },
+      ),
     );
   }
 
@@ -185,6 +234,37 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  Widget _buildPlacesList(List<PlaceModel> places, String emptyMessage) {
+    if (places.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.place_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              emptyMessage,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      itemCount: places.length,
+      itemBuilder: (context, index) {
+        final place = places[index];
+        return SuggestedPlaceCard(
+          place: place,
+          addedByName: 'You',
+          onTap: () => _showPlaceDetails(place),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
@@ -281,34 +361,28 @@ class _ProfilePageState extends State<ProfilePage> {
                         index: _selectedIndex,
                         children: [
                           // Added Places View
-                          ListView(
-                            children: const [
-                              PlaceCard(
-                                name: 'Central Park',
-                                date: '2023-08-15',
-                                rating: 4.5,
-                              ),
-                              PlaceCard(
-                                name: 'Times Square',
-                                date: '2023-08-14',
-                                rating: 4.0,
-                              ),
-                            ],
+                          Consumer2<UserProvider, PlaceProvider>(
+                            builder: (context, userProvider, placeProvider, _) {
+                              final user = userProvider.user;
+                              final allPlaces = placeProvider.places;
+
+                              // Filter places where addedBy matches current user's ID
+                              final userAddedPlaces = allPlaces
+                                  .where((place) => place.addedBy == user?.id)
+                                  .toList();
+
+                              return _buildPlacesList(
+                                userAddedPlaces,
+                                'No places added yet',
+                              );
+                            },
                           ),
                           // Last Viewed View
-                          ListView(
-                            children: const [
-                              PlaceCard(
-                                name: 'Brooklyn Bridge',
-                                date: '2023-08-13',
-                                rating: 4.8,
-                              ),
-                              PlaceCard(
-                                name: 'Empire State Building',
-                                date: '2023-08-12',
-                                rating: 4.2,
-                              ),
-                            ],
+                          Consumer<PlaceProvider>(
+                            builder: (context, provider, _) => _buildPlacesList(
+                              provider.lastViewedPlaces,
+                              'No places viewed yet',
+                            ),
                           ),
                         ],
                       ),

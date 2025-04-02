@@ -5,9 +5,11 @@ import '../services/place_service.dart';
 class PlaceProvider extends ChangeNotifier {
   final PlaceService _placeService = PlaceService();
   List<PlaceModel> _places = [];
+  List<PlaceModel> _lastViewedPlaces = [];
   bool _loading = false;
 
   List<PlaceModel> get places => _places;
+  List<PlaceModel> get lastViewedPlaces => _lastViewedPlaces;
   bool get loading => _loading;
 
   Future<void> loadPlaces() async {
@@ -22,6 +24,33 @@ class PlaceProvider extends ChangeNotifier {
 
     _loading = false;
     notifyListeners();
+  }
+
+  Future<void> loadLastViewedPlaces(String userId) async {
+    try {
+      _lastViewedPlaces = await _placeService.getLastViewedPlaces(userId);
+      notifyListeners();
+    } catch (e) {
+      print('Error loading last viewed places: $e');
+      _lastViewedPlaces = [];
+      notifyListeners();
+    }
+  }
+
+  Future<void> addToLastViewed(String userId, String placeId) async {
+    try {
+      // Remove if exists (to move to front)
+      _lastViewedPlaces.removeWhere((p) => p.id == placeId);
+
+      // Add to the beginning of the list
+      final place = _places.firstWhere((p) => p.id == placeId);
+      _lastViewedPlaces.insert(0, place);
+
+      await _placeService.addToLastViewed(userId, placeId);
+      notifyListeners();
+    } catch (e) {
+      print('Error adding to last viewed: $e');
+    }
   }
 
   Future<void> addPlace(PlaceModel place) async {

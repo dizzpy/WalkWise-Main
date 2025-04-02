@@ -25,4 +25,46 @@ class PlaceService {
       return [];
     }
   }
+
+  Future<List<PlaceModel>> getLastViewedPlaces(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('Users').doc(userId).get();
+      final List<String> lastViewedIds =
+          List<String>.from(userDoc.data()?['lastViewed'] ?? []);
+
+      if (lastViewedIds.isEmpty) return [];
+
+      // Reverse the list to get most recently viewed first
+      lastViewedIds.reversed;
+
+      final placesSnapshot = await _firestore
+          .collection('places')
+          .where(FieldPath.documentId, whereIn: lastViewedIds)
+          .get();
+
+      // Sort places based on the order in lastViewedIds
+      final places = placesSnapshot.docs
+          .map((doc) => PlaceModel.fromJson(doc.data(), doc.id))
+          .toList();
+
+      places.sort(
+          (a, b) => lastViewedIds.indexOf(b.id) - lastViewedIds.indexOf(a.id));
+
+      return places;
+    } catch (e) {
+      print('Error getting last viewed places: $e');
+      return [];
+    }
+  }
+
+  Future<void> addToLastViewed(String userId, String placeId) async {
+    try {
+      await _firestore.collection('Users').doc(userId).set({
+        'lastViewed': FieldValue.arrayUnion([placeId])
+      }, SetOptions(merge: true));
+    } catch (e) {
+      print('Error updating last viewed: $e');
+      rethrow;
+    }
+  }
 }

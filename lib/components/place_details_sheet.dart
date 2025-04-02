@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:provider/provider.dart';
 import '../models/place_model.dart';
 import '../models/user_model.dart';
 import '../services/user_service.dart';
+import '../providers/user_provider.dart';
+import '../providers/place_provider.dart';
 
 class PlaceDetailsSheet extends StatefulWidget {
   final PlaceModel place;
@@ -27,6 +30,7 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
   void initState() {
     super.initState();
     _loadUserDetails();
+    _trackView();
   }
 
   Future<void> _loadUserDetails() async {
@@ -39,6 +43,16 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
     } catch (e) {
       setState(() => _isLoadingUser = false);
       print('Error loading user details: $e');
+    }
+  }
+
+  Future<void> _trackView() async {
+    final user = context.read<UserProvider>().user;
+    if (user != null) {
+      await context.read<PlaceProvider>().addToLastViewed(
+            user.id,
+            widget.place.id,
+          );
     }
   }
 
