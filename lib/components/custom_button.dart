@@ -19,7 +19,6 @@ class CustomButton extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Material(
-      color: Colors.transparent,
       child: InkWell(
         onTap: isLoading ? null : onPressed,
         borderRadius: BorderRadius.circular(18),
@@ -28,13 +27,6 @@ class CustomButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: backgroundColor ?? theme.colorScheme.primary,
             borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: theme.colorScheme.primary.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
           child: Center(
             child: isLoading

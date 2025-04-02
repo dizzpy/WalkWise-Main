@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../profile/profile_page.dart';
 import '../../constants/colors.dart';
+import '../../components/custom_button.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -107,21 +108,15 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
 
-          // Logout Button
+          // Updated Logout Button
           Padding(
             padding: const EdgeInsets.all(16),
-            child: ElevatedButton(
+            child: CustomButton(
               onPressed: () {
                 // Add logout logic here
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                minimumSize: const Size.fromHeight(50),
-              ),
-              child: const Text(
-                'Logout',
-                style: TextStyle(fontSize: 16, color: Colors.white),
-              ),
+              text: 'Logout',
+              backgroundColor: Colors.red,
             ),
           ),
         ],
