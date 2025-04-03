@@ -3,6 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // Match the Users collection
     match /Users/{userId} {
       // Allow reading the user document only if the user is authenticated and the document matches the user's ID
@@ -21,9 +27,12 @@ service cloud.firestore {
       allow create: if request.auth != null && 
                    request.resource.data.addedBy == request.auth.uid;
       
-      // Allow updating and deleting only if user is authenticated and is the creator
-      allow update, delete: if request.auth != null && 
-                          resource.data.addedBy == request.auth.uid;
+      // Allow updating places if user is authenticated and is the creator or an admin
+      allow update: if request.auth != null && 
+                   (resource.data.addedBy == request.auth.uid || isAdmin());
+      
+      // Allow deleting places only for admins
+      allow delete: if request.auth != null && isAdmin();
     }
 
     // Match the notifications collection
@@ -35,9 +44,9 @@ service cloud.firestore {
       // Allow creating notifications from client-side
       allow create: if request.auth != null;
       
-      // Allow updating and deleting notifications if user is authenticated and is the recipient
+      // Allow updating and deleting notifications if user is authenticated and is the recipient or an admin
       allow update, delete: if request.auth != null && 
-                          resource.data.userId == request.auth.uid;
+                          (resource.data.userId == request.auth.uid || isAdmin());
 
       // Allow listing notifications
       allow list: if request.auth != null;
@@ -50,19 +59,29 @@ service cloud.firestore {
 
     // Match the reportedPlaces collection
     match /reportedPlaces/{reportId} {
+      // Allow creating reports for any authenticated user
       allow create: if request.auth != null;
+
+      // Allow reading if user is the reporter or an admin
       allow read: if request.auth != null && 
-                  (resource.data.reportedBy == request.auth.uid || 
-                   get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == 'admin');
+                  (resource.data.reportedBy == request.auth.uid || isAdmin());
+
+      // Allow updates and deletes only for admins
+      allow update, delete: if request.auth != null && isAdmin();
     }
 
     // Match the reviews collection
     match /reviews/{reviewId} {
+      // Allow reading reviews if user is authenticated
       allow read: if request.auth != null;
+
+      // Allow creating reviews if user is authenticated
       allow create: if request.auth != null && 
                     request.resource.data.userId == request.auth.uid;
+
+      // Allow updating and deleting reviews if user is authenticated and is the creator or an admin
       allow update, delete: if request.auth != null && 
-                          resource.data.userId == request.auth.uid;
+                          (resource.data.userId == request.auth.uid || isAdmin());
     }
   }
 }

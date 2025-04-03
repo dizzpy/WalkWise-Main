@@ -8,6 +8,7 @@ import 'package:walkwise/providers/user_provider.dart';
 import 'package:walkwise/providers/place_provider.dart';
 import 'package:walkwise/providers/notification_provider.dart';
 import 'package:walkwise/providers/review_provider.dart';
+import 'package:walkwise/providers/admin_provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'firebase_options.dart';
@@ -107,6 +108,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PlaceProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
         ChangeNotifierProvider(create: (_) => ReviewProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: MaterialApp(
         title: 'WalkWise',

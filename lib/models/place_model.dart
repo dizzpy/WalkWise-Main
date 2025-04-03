@@ -10,6 +10,7 @@ class PlaceModel {
   final String addedBy;
   final DateTime addedDate;
   final String address;
+  int reviewCount;
 
   PlaceModel({
     required this.id,
@@ -21,6 +22,7 @@ class PlaceModel {
     required this.addedBy,
     required this.addedDate,
     required this.address,
+    this.reviewCount = 0,
   });
 
   // Add copyWith method
@@ -34,6 +36,7 @@ class PlaceModel {
     String? addedBy,
     DateTime? addedDate,
     String? address,
+    int? reviewCount,
   }) {
     return PlaceModel(
       id: id ?? this.id,
@@ -45,6 +48,7 @@ class PlaceModel {
       addedBy: addedBy ?? this.addedBy,
       addedDate: addedDate ?? this.addedDate,
       address: address ?? this.address,
+      reviewCount: reviewCount ?? this.reviewCount,
     );
   }
 
@@ -58,6 +62,7 @@ class PlaceModel {
       'addedBy': addedBy,
       'addedDate': Timestamp.fromDate(addedDate),
       'address': address,
+      'reviewCount': reviewCount,
     };
   }
 
@@ -72,6 +77,7 @@ class PlaceModel {
       addedBy: json['addedBy'] ?? '',
       addedDate: (json['addedDate'] as Timestamp).toDate(),
       address: json['address'] ?? '',
+      reviewCount: json['reviewCount'] ?? 0,
     );
   }
 }
