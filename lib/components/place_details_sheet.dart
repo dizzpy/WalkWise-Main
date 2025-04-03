@@ -6,6 +6,8 @@ import '../models/user_model.dart';
 import '../services/user_service.dart';
 import '../providers/user_provider.dart';
 import '../providers/place_provider.dart';
+import 'report_place_dialog.dart';
+import '../services/report_service.dart';
 
 class PlaceDetailsSheet extends StatefulWidget {
   final PlaceModel place;
@@ -23,14 +25,17 @@ class PlaceDetailsSheet extends StatefulWidget {
 
 class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
   final UserService _userService = UserService();
+  final ReportService _reportService = ReportService();
   UserModel? _addedByUser;
   bool _isLoadingUser = true;
+  bool _canReport = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserDetails();
     _trackView();
+    _checkReportEligibility();
   }
 
   Future<void> _loadUserDetails() async {
@@ -54,6 +59,41 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
             widget.place.id,
           );
     }
+  }
+
+  Future<void> _checkReportEligibility() async {
+    final user = context.read<UserProvider>().user;
+    if (user != null) {
+      // User can't report their own places
+      if (widget.place.addedBy == user.id) {
+        setState(() => _canReport = false);
+        return;
+      }
+
+      // Check if user has already reported this place
+      final hasReported = await _reportService.hasUserReportedPlace(
+        placeId: widget.place.id,
+        userId: user.id,
+      );
+      setState(() => _canReport = !hasReported);
+    }
+  }
+
+  void _showReportDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ReportPlaceDialog(
+        placeId: widget.place.id,
+        placeName: widget.place.name,
+        userId: context.read<UserProvider>().user!.id,
+      ),
+    ).then((reported) {
+      if (reported == true) {
+        setState(() => _canReport = false);
+      }
+    });
   }
 
   Widget _buildAddedByText() {
@@ -96,29 +136,13 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Place name and actions
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.place.name,
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.report_outlined),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Report feature coming soon')),
-                            );
-                          },
-                        ),
-                      ],
+                    // Place name
+                    Text(
+                      widget.place.name,
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     // Address
                     Text(
@@ -261,6 +285,26 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
                         ),
                       ),
                     ),
+                    if (_canReport)
+                      Container(
+                        margin: const EdgeInsets.only(top: 16),
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: _showReportDialog,
+                          icon: const Icon(Icons.report_problem_outlined),
+                          label: const Text('Report this place'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red[50],
+                            foregroundColor: Colors.red[700],
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: BorderSide(color: Colors.red[200]!),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
