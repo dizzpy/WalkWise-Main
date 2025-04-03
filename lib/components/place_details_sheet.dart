@@ -106,6 +106,53 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
     );
   }
 
+  Widget _buildReportSection() {
+    if (!mounted) return const SizedBox.shrink();
+
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      width: double.infinity,
+      child: _canReport
+          ? ElevatedButton.icon(
+              onPressed: _showReportDialog,
+              icon: const Icon(Icons.report_problem_outlined),
+              label: const Text('Report this place'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[50],
+                foregroundColor: Colors.red[700],
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(color: Colors.red[200]!),
+                ),
+              ),
+            )
+          : Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.info_outline, size: 20, color: Colors.grey[600]),
+                  const SizedBox(width: 8),
+                  Text(
+                    'You have already reported this place',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
@@ -285,26 +332,8 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
                         ),
                       ),
                     ),
-                    if (_canReport)
-                      Container(
-                        margin: const EdgeInsets.only(top: 16),
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: _showReportDialog,
-                          icon: const Icon(Icons.report_problem_outlined),
-                          label: const Text('Report this place'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red[50],
-                            foregroundColor: Colors.red[700],
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: BorderSide(color: Colors.red[200]!),
-                            ),
-                          ),
-                        ),
-                      ),
+                    // Report section
+                    _buildReportSection(),
                   ],
                 ),
               ),
