@@ -58,7 +58,7 @@ class PlaceProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final placeId = await _placeService.addPlace(place);
+      final placeId = await _placeService.addPlace(place, place.addedBy);
       final newPlace = PlaceModel(
         id: placeId,
         name: place.name,

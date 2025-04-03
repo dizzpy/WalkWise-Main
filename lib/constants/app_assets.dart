@@ -15,4 +15,9 @@ class AppAssets {
   // Location Icons
   static const mapIcon = "assets/icons/location.svg";
   static const locationPinIcon = "assets/icons/location.svg";
+
+  // Home Icons
+  static const notificationIcon = "assets/icons/notification.svg";
+  static const searchIcon = "assets/icons/search.svg";
+  static const clockIcon = "assets/icons/clock.svg";
 }

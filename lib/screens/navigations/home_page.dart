@@ -2,11 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/place_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../components/suggested_place_card.dart';
 import '../../constants/colors.dart';
+import '../../constants/app_assets.dart';
+import '../../components/custom_icon_button.dart';
 import '../places/suggested_places_page.dart';
+import '../places/search_places_page.dart';
+import '../notifications/notifications_page.dart';
+import '../../components/notification_badge.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -29,6 +36,7 @@ class _HomePageState extends State<HomePage> {
     final user = context.read<UserProvider>().user;
     if (user != null) {
       await context.read<PlaceProvider>().loadLastViewedPlaces(user.id);
+      await context.read<NotificationProvider>().loadUnreadCount(user.id);
     }
   }
 
@@ -45,6 +53,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildGreetingSection() {
     final user = context.watch<UserProvider>().user;
+    final unreadCount = context.watch<NotificationProvider>().unreadCount;
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -70,14 +80,32 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Implement notifications
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications coming soon')),
-              );
-            },
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              CustomIconButton(
+                icon: AppAssets.notificationIcon,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const NotificationsPage()),
+                  ).then((_) {
+                    if (user != null) {
+                      context
+                          .read<NotificationProvider>()
+                          .loadUnreadCount(user.id);
+                    }
+                  });
+                },
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  top: -5,
+                  right: -5,
+                  child: NotificationBadge(count: unreadCount),
+                ),
+            ],
           ),
         ],
       ),
@@ -85,24 +113,52 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: TextField(
-        controller: _searchController,
-        decoration: InputDecoration(
-          hintText: 'Search places...',
-          prefixIcon: const Icon(Icons.search),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const SearchPlacesPage()),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        child: AbsorbPointer(
+          child: TextField(
+            controller: _searchController,
+            style: const TextStyle(fontSize: 15),
+            decoration: InputDecoration(
+              hintText: 'Search places...',
+              hintStyle: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 15,
+              ),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.all(12),
+                child: SvgPicture.asset(
+                  AppAssets.searchIcon,
+                  colorFilter: ColorFilter.mode(
+                    Colors.grey.shade400,
+                    BlendMode.srcIn,
+                  ),
+                ),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primary),
+              ),
+              fillColor: Colors.white,
+              filled: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+            ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 12),
-          fillColor: Colors.grey.shade50,
-          filled: true,
         ),
       ),
     );

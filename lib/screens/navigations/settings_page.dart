@@ -87,17 +87,17 @@ class _SettingsPageState extends State<SettingsPage> {
         border: Border.all(color: AppColors.outline),
       ),
       child: Row(
-        children: [
-          const SkeletonLoading(
+        children: const [
+          SkeletonLoading(
             width: 60,
             height: 60,
             borderRadius: 30,
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 SkeletonLoading(width: 120, height: 20),
                 SizedBox(height: 8),
                 SkeletonLoading(width: 180, height: 16),

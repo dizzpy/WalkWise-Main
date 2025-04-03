@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/user_service.dart';
+import '../services/notification_service.dart';
 
 class UserProvider extends ChangeNotifier {
   final UserService _userService = UserService();
+  final NotificationService _notificationService = NotificationService();
   UserModel? _user;
   bool _loading = false;
 
@@ -16,6 +18,9 @@ class UserProvider extends ChangeNotifier {
 
     try {
       _user = await _userService.getCurrentUser();
+      if (_user != null) {
+        await _notificationService.saveUserToken(_user!.id);
+      }
     } catch (e) {
       print('Error loading user: $e');
     }
