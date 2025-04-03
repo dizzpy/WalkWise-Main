@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/report_service.dart';
-import '../constants/colors.dart';
 
 class ReportPlaceDialog extends StatefulWidget {
   final String placeId;
