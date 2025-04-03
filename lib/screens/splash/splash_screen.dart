@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/colors.dart';
 import '../auth/auth_gate.dart';
+import '../../providers/user_provider.dart';
+import '../../providers/place_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../services/notification_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,12 +19,14 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  bool _isLoading = true;
+  String _loadingText = 'Initializing...';
 
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
-    _navigateAfterDelay();
+    _initializeApp();
   }
 
   void _initializeAnimations() {
@@ -47,14 +54,47 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.forward();
   }
 
-  void _navigateAfterDelay() {
-    Future.delayed(const Duration(seconds: 3), () {
+  Future<void> _initializeApp() async {
+    try {
+      // Initialize notifications
+      setState(() => _loadingText = 'Setting up notifications...');
+      await NotificationService().initialize();
+
+      // Load user data
+      setState(() => _loadingText = 'Loading user data...');
+      await context.read<UserProvider>().loadUser();
+
+      final user = context.read<UserProvider>().user;
+      if (user != null) {
+        // Load places data
+        setState(() => _loadingText = 'Loading places...');
+        await Future.wait([
+          context.read<PlaceProvider>().loadPlaces(),
+          context.read<PlaceProvider>().loadLastViewedPlaces(user.id),
+        ]);
+
+        // Load notifications
+        setState(() => _loadingText = 'Loading notifications...');
+        await context.read<NotificationProvider>().loadUnreadCount(user.id);
+      }
+
+      // Delay for minimum splash screen time
+      await Future.delayed(const Duration(seconds: 2));
+
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const AuthGate()),
         );
       }
-    });
+    } catch (e) {
+      print('Error initializing app: $e');
+      // Still navigate after error, app will handle individual loading states
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const AuthGate()),
+        );
+      }
+    }
   }
 
   @override
@@ -111,16 +151,29 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
                 const SizedBox(height: 40),
-                // Minimal loading indicator
-                SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary.withOpacity(0.5),
+                // Loading indicator and text
+                Column(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primary.withOpacity(0.5),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    Text(
+                      _loadingText,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
