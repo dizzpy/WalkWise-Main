@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../constants/colors.dart';
 import '../providers/review_provider.dart';
 
 class AddReviewDialog extends StatefulWidget {
@@ -28,12 +27,15 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(5, (index) {
-        return IconButton(
-          onPressed: () => setState(() => _rating = index + 1),
-          icon: Icon(
-            index < _rating ? Icons.star : Icons.star_border,
-            color: index < _rating ? Colors.amber : Colors.grey,
-            size: 32,
+        return GestureDetector(
+          onTap: () => setState(() => _rating = index + 1),
+          child: Container(
+            padding: const EdgeInsets.all(4),
+            child: Icon(
+              index < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
+              color: index < _rating ? Colors.amber : Colors.grey[400],
+              size: 40,
+            ),
           ),
         );
       }),
@@ -69,29 +71,38 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Rate this place',
+              'Rate & Review',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: AppColors.primary,
+                color: Colors.black,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
+            Text(
+              'Share your experience with others',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 24),
             _buildStarRating(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             TextField(
               controller: _reviewController,
               maxLength: 200,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: 'Write your review...',
+                hintText: 'What did you like or dislike?',
+                hintStyle: TextStyle(color: Colors.grey[400]),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(color: Colors.grey.shade300),
@@ -102,32 +113,41 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.primary),
+                  borderSide: const BorderSide(color: Colors.black, width: 1.5),
                 ),
+                filled: true,
+                fillColor: Colors.grey[50],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Row(
               children: [
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                     child: Text(
                       'Cancel',
-                      style: TextStyle(color: Colors.grey[600]),
+                      style: TextStyle(color: Colors.grey[700]),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: FilledButton(
                     onPressed: _isSubmitting ||
                             _rating == 0 ||
                             _reviewController.text.trim().isEmpty
                         ? null
                         : _submitReview,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -138,9 +158,8 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : const Text('Submit'),
