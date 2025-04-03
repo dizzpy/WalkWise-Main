@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:walkwise/models/user_model.dart';
+import 'package:walkwise/screens/admin/admin_dashboard_page.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/place_provider.dart';
 import '../../providers/notification_provider.dart';
@@ -16,7 +17,6 @@ import '../places/search_places_page.dart';
 import '../notifications/notifications_page.dart';
 import '../../components/notification_badge.dart';
 import '../admin/components/admin_alert_banner.dart';
-import '../admin/dashboard/admin_dashboard_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
