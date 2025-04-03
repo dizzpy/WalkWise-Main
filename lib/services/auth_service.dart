@@ -21,34 +21,30 @@ class AuthService {
   }
 
 // Register User
-  Future<UserCredential> registerWithEmailAndPassword(
-    String email,
-    String password,
-    String fullName,
-  ) async {
+  Future<UserCredential> register(
+      String email, String password, String fullName) async {
     try {
-      print('Attempting to register user with email: $email');
       final userCredential = await _auth.createUserWithEmailAndPassword(
-        email: email.trim(),
+        email: email,
         password: password,
       );
-      print('User successfully created: ${userCredential.user?.uid}');
 
-      // Save user data in Firestore
-      await createUserData(
-        uid: userCredential.user!.uid, // Use UID instead of email
-        email: email,
-        fullName: fullName,
-      );
+      // Create user document with role
+      await _firestore.collection('Users').doc(userCredential.user!.uid).set({
+        'fullName': fullName,
+        'email': email,
+        'role': 'user', // Set default role
+        'createdAt': FieldValue.serverTimestamp(),
+        'profileImgLink': '',
+        'interests': [],
+        'location': '',
+        'latitude': null,
+        'longitude': null,
+      });
 
       return userCredential;
-    } on FirebaseAuthException catch (e) {
-      print(
-          'FirebaseAuthException during registration: ${e.code} - ${e.message}');
-      throw _handleAuthError(e);
-    } catch (e, stackTrace) {
-      print('Unexpected error during registration: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
+      print('Error during registration: $e');
       rethrow;
     }
   }
