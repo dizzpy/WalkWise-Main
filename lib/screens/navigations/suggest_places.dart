@@ -74,23 +74,23 @@ class _SuggestPlacesState extends State<SuggestPlaces> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              children: [
-                const SkeletonLoading(
+              children: const [
+                SkeletonLoading(
                   width: 50,
                   height: 50,
                   borderRadius: 12,
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SkeletonLoading(
+                      SkeletonLoading(
                         width: 140,
                         height: 20,
                         borderRadius: 4,
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8),
                       SkeletonLoading(
                         width: 180,
                         height: 16,

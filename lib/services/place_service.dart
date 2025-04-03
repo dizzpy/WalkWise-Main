@@ -1,12 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/place_model.dart';
+import 'notification_service.dart';
 
 class PlaceService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificationService _notificationService = NotificationService();
 
-  Future<String> addPlace(PlaceModel place) async {
+  Future<String> addPlace(PlaceModel place, String addedById) async {
     try {
       final docRef = await _firestore.collection('places').add(place.toJson());
+
+      // Send notifications with user ID
+      await _notificationService.notifyNewPlace(
+        place.copyWith(id: docRef.id),
+        addedById, // Pass the user ID instead of name
+      );
+
       return docRef.id;
     } catch (e) {
       print('Error adding place: $e');

@@ -23,6 +23,31 @@ class PlaceModel {
     required this.address,
   });
 
+  // Add copyWith method
+  PlaceModel copyWith({
+    String? id,
+    String? name,
+    String? description,
+    double? latitude,
+    double? longitude,
+    List<String>? tags,
+    String? addedBy,
+    DateTime? addedDate,
+    String? address,
+  }) {
+    return PlaceModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      tags: tags ?? this.tags,
+      addedBy: addedBy ?? this.addedBy,
+      addedDate: addedDate ?? this.addedDate,
+      address: address ?? this.address,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'name': name,
@@ -41,8 +66,8 @@ class PlaceModel {
       id: id,
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      latitude: json['latitude'] ?? 0.0,
-      longitude: json['longitude'] ?? 0.0,
+      latitude: (json['latitude'] as num).toDouble(),
+      longitude: (json['longitude'] as num).toDouble(),
       tags: List<String>.from(json['tags'] ?? []),
       addedBy: json['addedBy'] ?? '',
       addedDate: (json['addedDate'] as Timestamp).toDate(),

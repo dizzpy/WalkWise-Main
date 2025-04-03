@@ -1,0 +1,51 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Match the Users collection
+    match /Users/{userId} {
+      // Allow reading the user document only if the user is authenticated and the document matches the user's ID
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow writing to the user document only if the user is authenticated and the document matches the user's ID
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Match the places collection
+    match /places/{placeId} {
+      // Allow reading places if user is authenticated
+      allow read: if request.auth != null;
+      
+      // Allow creating places if user is authenticated
+      allow create: if request.auth != null && 
+                   request.resource.data.addedBy == request.auth.uid;
+      
+      // Allow updating and deleting only if user is authenticated and is the creator
+      allow update, delete: if request.auth != null && 
+                          resource.data.addedBy == request.auth.uid;
+    }
+
+    // Match the notifications collection
+    match /notifications/{notificationId} {
+      // Allow reading notifications if user is authenticated and is the recipient
+      allow read: if request.auth != null && 
+                 resource.data.userId == request.auth.uid;
+      
+      // Allow creating notifications from client-side
+      allow create: if request.auth != null;
+      
+      // Allow updating notifications (for marking as read)
+      allow update: if request.auth != null && 
+                   resource.data.userId == request.auth.uid;
+
+      // Allow listing notifications
+      allow list: if request.auth != null;
+    }
+
+    // Add collection group rule for Users
+    match /{path=**}/Users/{userId} {
+      allow read: if request.auth != null;
+    }
+  }
+}
