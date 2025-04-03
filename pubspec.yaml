@@ -28,6 +28,7 @@ dependencies:
   timeago: ^3.2.2
   firebase_messaging: ^14.7.10
   flutter_local_notifications: ^13.0.0
+  rename_app: ^1.6.2
 
 dev_dependencies:
   flutter_test:
