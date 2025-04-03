@@ -99,4 +99,76 @@ class AdminProvider extends ChangeNotifier {
       print('Error loading reported places: $e');
     }
   }
+
+  Future<void> resolveReport(String reportId) async {
+    try {
+      await _firestore
+          .collection('reportedPlaces')
+          .doc(reportId)
+          .update({'status': 'resolved'});
+
+      // Remove from local list
+      _reportedPlaces.removeWhere((report) => report.id == reportId);
+      notifyListeners();
+    } catch (e) {
+      print('Error resolving report: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> deleteReport(String reportId) async {
+    try {
+      // Get the report data before deleting
+      final reportDoc =
+          await _firestore.collection('reportedPlaces').doc(reportId).get();
+      if (!reportDoc.exists) {
+        throw Exception('Report not found');
+      }
+
+      final reportData = reportDoc.data()!;
+      final String placeId = reportData['placeId'];
+
+      // Start a batch write
+      final batch = _firestore.batch();
+
+      // Delete the report
+      batch.delete(_firestore.collection('reportedPlaces').doc(reportId));
+
+      // Delete the place
+      batch.delete(_firestore.collection('places').doc(placeId));
+
+      // Get all reviews for this place
+      final reviewsSnapshot = await _firestore
+          .collection('reviews')
+          .where('placeId', isEqualTo: placeId)
+          .get();
+
+      // Delete all reviews
+      for (var doc in reviewsSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Get all notifications related to this place
+      final notificationsSnapshot = await _firestore
+          .collection('notifications')
+          .where('data.placeId', isEqualTo: placeId)
+          .get();
+
+      // Delete all related notifications
+      for (var doc in notificationsSnapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Commit the batch
+      await batch.commit();
+
+      // Update local state
+      _reportedPlaces.removeWhere((report) => report.id == reportId);
+      _places.removeWhere((place) => place.id == placeId);
+      notifyListeners();
+    } catch (e) {
+      print('Error deleting report and related data: $e');
+      rethrow;
+    }
+  }
 }

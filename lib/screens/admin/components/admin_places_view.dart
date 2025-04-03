@@ -62,6 +62,64 @@ class _AllPlacesList extends StatelessWidget {
 }
 
 class _ReportedPlacesList extends StatelessWidget {
+  Future<bool> _confirmAction(BuildContext context, String action) async {
+    return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('$action Report'),
+            content: Text('Are you sure you want to $action this report?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor:
+                      action == 'Delete' ? Colors.red : Colors.green,
+                ),
+                child: Text(action),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
+  Future<void> _handleReportAction(
+    BuildContext context,
+    String reportId,
+    String action,
+  ) async {
+    try {
+      final confirmed = await _confirmAction(context, action);
+      if (!confirmed) return;
+
+      final provider = context.read<AdminProvider>();
+
+      if (action == 'Delete') {
+        await provider.deleteReport(reportId);
+      } else {
+        await provider.resolveReport(reportId);
+      }
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Report ${action.toLowerCase()}d successfully')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Error ${action.toLowerCase()}ing report: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<AdminProvider>(
@@ -138,20 +196,35 @@ class _ReportedPlacesList extends StatelessWidget {
                   itemBuilder: (context) => [
                     PopupMenuItem(
                       value: 'resolve',
-                      child: const Text('Mark as resolved'),
-                      onTap: () {
-                        // TODO: Implement resolve functionality
-                      },
+                      child: Row(
+                        children: [
+                          Icon(Icons.check_circle_outline,
+                              color: Colors.green[700], size: 20),
+                          const SizedBox(width: 8),
+                          const Text('Mark as resolved'),
+                        ],
+                      ),
+                      onTap: () => Future.delayed(
+                        const Duration(seconds: 0),
+                        () =>
+                            _handleReportAction(context, report.id, 'Resolve'),
+                      ),
                     ),
                     PopupMenuItem(
                       value: 'delete',
-                      child: const Text(
-                        'Delete report',
-                        style: TextStyle(color: Colors.red),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.delete_outline,
+                              color: Colors.red, size: 20),
+                          const SizedBox(width: 8),
+                          const Text('Delete report',
+                              style: TextStyle(color: Colors.red)),
+                        ],
                       ),
-                      onTap: () {
-                        // TODO: Implement delete functionality
-                      },
+                      onTap: () => Future.delayed(
+                        const Duration(seconds: 0),
+                        () => _handleReportAction(context, report.id, 'Delete'),
+                      ),
                     ),
                   ],
                 ),
