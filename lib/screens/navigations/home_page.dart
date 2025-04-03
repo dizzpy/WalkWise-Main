@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/place_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../components/suggested_place_card.dart';
 import '../../constants/colors.dart';
 import '../../constants/app_assets.dart';
@@ -12,6 +13,7 @@ import '../../components/custom_icon_button.dart';
 import '../places/suggested_places_page.dart';
 import '../places/search_places_page.dart';
 import '../notifications/notifications_page.dart';
+import '../../components/notification_badge.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,6 +36,7 @@ class _HomePageState extends State<HomePage> {
     final user = context.read<UserProvider>().user;
     if (user != null) {
       await context.read<PlaceProvider>().loadLastViewedPlaces(user.id);
+      await context.read<NotificationProvider>().loadUnreadCount(user.id);
     }
   }
 
@@ -50,6 +53,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildGreetingSection() {
     final user = context.watch<UserProvider>().user;
+    final unreadCount = context.watch<NotificationProvider>().unreadCount;
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -75,14 +80,32 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          CustomIconButton(
-            icon: AppAssets.notificationIcon,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const NotificationsPage()),
-              );
-            },
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              CustomIconButton(
+                icon: AppAssets.notificationIcon,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const NotificationsPage()),
+                  ).then((_) {
+                    if (user != null) {
+                      context
+                          .read<NotificationProvider>()
+                          .loadUnreadCount(user.id);
+                    }
+                  });
+                },
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  top: -5,
+                  right: -5,
+                  child: NotificationBadge(count: unreadCount),
+                ),
+            ],
           ),
         ],
       ),

@@ -35,9 +35,9 @@ service cloud.firestore {
       // Allow creating notifications from client-side
       allow create: if request.auth != null;
       
-      // Allow updating notifications (for marking as read)
-      allow update: if request.auth != null && 
-                   resource.data.userId == request.auth.uid;
+      // Allow updating and deleting notifications if user is authenticated and is the recipient
+      allow update, delete: if request.auth != null && 
+                          resource.data.userId == request.auth.uid;
 
       // Allow listing notifications
       allow list: if request.auth != null;
