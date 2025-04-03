@@ -11,6 +11,7 @@ import '../../constants/app_assets.dart';
 import '../../components/custom_icon_button.dart';
 import '../places/suggested_places_page.dart';
 import '../places/search_places_page.dart';
+import '../notifications/notifications_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -77,8 +78,9 @@ class _HomePageState extends State<HomePage> {
           CustomIconButton(
             icon: AppAssets.notificationIcon,
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications coming soon')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const NotificationsPage()),
               );
             },
           ),
