@@ -47,5 +47,13 @@ service cloud.firestore {
     match /{path=**}/Users/{userId} {
       allow read: if request.auth != null;
     }
+
+    // Match the reportedPlaces collection
+    match /reportedPlaces/{reportId} {
+      allow create: if request.auth != null;
+      allow read: if request.auth != null && 
+                  (resource.data.reportedBy == request.auth.uid || 
+                   get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role == 'admin');
+    }
   }
 }

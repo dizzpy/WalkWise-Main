@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:walkwise/models/user_model.dart';
 import '../../providers/user_provider.dart';
 import '../../providers/place_provider.dart';
 import '../../providers/notification_provider.dart';
@@ -31,14 +32,29 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadData();
+      }
+    });
   }
 
   Future<void> _loadData() async {
+    if (!mounted) return;
+
     final user = context.read<UserProvider>().user;
     if (user != null) {
-      await context.read<PlaceProvider>().loadLastViewedPlaces(user.id);
-      await context.read<NotificationProvider>().loadUnreadCount(user.id);
+      try {
+        await Future.wait([
+          context.read<PlaceProvider>().loadLastViewedPlaces(user.id),
+          context.read<NotificationProvider>().loadUnreadCount(user.id),
+        ]);
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error loading data')),
+        );
+      }
     }
   }
 
@@ -50,6 +66,19 @@ class _HomePageState extends State<HomePage> {
       return 'Good Afternoon';
     } else {
       return 'Good Evening';
+    }
+  }
+
+  void _handleNotificationTap(UserModel? user) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const NotificationsPage()),
+    );
+
+    if (!mounted) return;
+
+    if (user != null) {
+      await context.read<NotificationProvider>().loadUnreadCount(user.id);
     }
   }
 
@@ -87,19 +116,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               CustomIconButton(
                 icon: AppAssets.notificationIcon,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => const NotificationsPage()),
-                  ).then((_) {
-                    if (user != null) {
-                      context
-                          .read<NotificationProvider>()
-                          .loadUnreadCount(user.id);
-                    }
-                  });
-                },
+                onPressed: () => _handleNotificationTap(user),
               ),
               if (unreadCount > 0)
                 Positioned(
