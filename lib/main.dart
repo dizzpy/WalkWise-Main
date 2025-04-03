@@ -11,6 +11,7 @@ import 'package:walkwise/providers/notification_provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'firebase_options.dart';
+import 'screens/splash/splash_screen.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -109,7 +110,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: 'WalkWise',
         theme: AppTheme.lightTheme,
-        home: const AuthGate(),
+        home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
       ),
     );
