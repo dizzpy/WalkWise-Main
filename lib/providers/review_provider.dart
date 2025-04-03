@@ -58,6 +58,21 @@ class ReviewProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteReview(String placeId, String reviewId) async {
+    try {
+      // Remove the review from local list first
+      _reviews.removeWhere((review) => review.id == reviewId);
+      notifyListeners();
+
+      // Then delete from backend
+      await _reviewService.deleteReview(reviewId);
+    } catch (e) {
+      // If deletion fails, reload reviews to restore state
+      await loadReviews(placeId);
+      throw e;
+    }
+  }
+
   Future<bool> hasUserReviewed(String placeId, String userId) async {
     try {
       return await _reviewService.hasUserReviewed(placeId, userId);

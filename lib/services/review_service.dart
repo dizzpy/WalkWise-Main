@@ -67,4 +67,13 @@ class ReviewService {
       return false;
     }
   }
+
+  Future<void> deleteReview(String reviewId) async {
+    try {
+      await _firestore.collection('reviews').doc(reviewId).delete();
+    } catch (e) {
+      print('Error deleting review: $e');
+      rethrow;
+    }
+  }
 }

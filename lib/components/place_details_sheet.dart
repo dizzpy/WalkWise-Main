@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:provider/provider.dart';
+import 'package:walkwise/models/review_model.dart';
 import '../models/place_model.dart';
 import '../models/user_model.dart';
 import '../services/user_service.dart';
@@ -127,6 +128,78 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
     });
   }
 
+  Future<void> _handleDeleteReview(ReviewModel review) async {
+    final reviewProvider = context.read<ReviewProvider>();
+
+    try {
+      final shouldDelete = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Delete Review'),
+              content:
+                  const Text('Are you sure you want to delete your review?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+
+      if (shouldDelete) {
+        await reviewProvider.deleteReview(widget.place.id, review.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Review deleted')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete review')),
+        );
+      }
+    }
+  }
+
+  Future<bool> _confirmDeleteReview() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Review'),
+            content: const Text(
+                'Are you sure you want to delete your review? This action cannot be undone.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Delete',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
   Widget _buildAddedByText() {
     if (_isLoadingUser) {
       return const Text('Loading...', style: TextStyle(color: Colors.grey));
@@ -181,6 +254,89 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
                 ],
               ),
             ),
+    );
+  }
+
+  Widget _buildReviewItem(ReviewModel review) {
+    final currentUser = context.read<UserProvider>().user;
+    final isOwnReview = currentUser?.id == review.userId;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.grey[100],
+                child: Text(
+                  review.userFullName[0].toUpperCase(),
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      review.userFullName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: List.generate(
+                        5,
+                        (i) => Icon(
+                          i < review.rating ? Icons.star : Icons.star_border,
+                          size: 16,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                timeago.format(review.createdAt),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+              if (isOwnReview)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  color: Colors.red[400],
+                  onPressed: () => _handleDeleteReview(review),
+                ),
+            ],
+          ),
+          if (review.review.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              review.review,
+              style: const TextStyle(
+                fontSize: 15,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -279,79 +435,7 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final review = reviews[index];
-                  return Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Colors.grey[100],
-                              child: Text(
-                                review.userFullName[0].toUpperCase(),
-                                style: TextStyle(
-                                  color: Colors.grey[700],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    review.userFullName,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: List.generate(
-                                      5,
-                                      (i) => Icon(
-                                        i < review.rating
-                                            ? Icons.star
-                                            : Icons.star_border,
-                                        size: 16,
-                                        color: Colors.amber,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              timeago.format(review.createdAt),
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (review.review.isNotEmpty) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            review.review,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              height: 1.4,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
+                  return _buildReviewItem(review);
                 },
               ),
           ],
