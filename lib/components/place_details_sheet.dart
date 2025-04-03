@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:provider/provider.dart';
+import 'package:walkwise/components/skeleton_loading.dart';
 import 'package:walkwise/models/review_model.dart';
 import '../models/place_model.dart';
 import '../models/user_model.dart';
@@ -345,6 +346,24 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
       builder: (context, reviewProvider, _) {
         final reviews = reviewProvider.reviews;
         final loading = reviewProvider.loading;
+        final currentUser = context.read<UserProvider>().user;
+
+        // Find user's existing review
+        final userReview = currentUser != null
+            ? reviews.firstWhere(
+                (r) => r.userId == currentUser.id,
+                orElse: () => ReviewModel(
+                  id: '',
+                  placeId: '',
+                  userId: '',
+                  userFullName: '',
+                  review: '',
+                  rating: 0,
+                  createdAt: DateTime.now(),
+                ),
+              )
+            : null;
+        final hasReviewed = userReview?.id.isNotEmpty ?? false;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,46 +378,74 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                TextButton.icon(
-                  onPressed: () async {
-                    final user = context.read<UserProvider>().user;
-                    if (user != null) {
-                      final hasReviewed = await context
-                          .read<ReviewProvider>()
-                          .hasUserReviewed(widget.place.id, user.id);
-
-                      if (hasReviewed && mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text('You have already reviewed this place'),
-                          ),
-                        );
-                        return;
-                      }
-                      if (mounted) {
-                        _showAddReviewDialog();
-                      }
-                    }
-                  },
-                  icon: const Icon(Icons.rate_review_outlined, size: 20),
-                  label: const Text('Add Review'),
-                ),
+                if (currentUser != null)
+                  TextButton.icon(
+                    onPressed: () => _showAddReviewDialog(),
+                    icon: Icon(
+                      hasReviewed ? Icons.edit : Icons.add,
+                      size: 18,
+                    ),
+                    label: Text(hasReviewed ? 'Edit Review' : 'Write a review'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: hasReviewed ? Colors.amber[700] : null,
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // Show loading, empty state, or reviews
+            // Loading State
             if (loading)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(strokeWidth: 2),
+              Column(
+                children: List.generate(
+                  2,
+                  (index) => Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const SkeletonLoading(
+                              width: 40,
+                              height: 40,
+                              borderRadius: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SkeletonLoading(
+                                  width: 120,
+                                  height: 16,
+                                  borderRadius: 8,
+                                ),
+                                const SizedBox(height: 8),
+                                SkeletonLoading(
+                                  width: 80,
+                                  height: 12,
+                                  borderRadius: 6,
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        SkeletonLoading(
+                          width: double.infinity,
+                          height: 16,
+                          borderRadius: 8,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               )
+            // Empty State
             else if (reviews.isEmpty)
               Container(
-                padding: const EdgeInsets.all(20),
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.grey[50],
                   borderRadius: BorderRadius.circular(12),
@@ -406,22 +453,22 @@ class _PlaceDetailsSheetState extends State<PlaceDetailsSheet> {
                 ),
                 child: Column(
                   children: [
-                    Icon(Icons.star_border, size: 48, color: Colors.grey[400]),
+                    Icon(Icons.star_outline, size: 32, color: Colors.grey[400]),
                     const SizedBox(height: 12),
                     Text(
                       'No reviews yet',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
                         color: Colors.grey[600],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Be the first to review this place',
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 14,
+                    const SizedBox(height: 16),
+                    TextButton(
+                      onPressed: _showAddReviewDialog,
+                      child: Text(
+                        'Be the first to review',
+                        style: TextStyle(color: Colors.grey[700]),
                       ),
                     ),
                   ],
