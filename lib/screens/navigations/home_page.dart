@@ -14,6 +14,8 @@ import '../places/suggested_places_page.dart';
 import '../places/search_places_page.dart';
 import '../notifications/notifications_page.dart';
 import '../../components/notification_badge.dart';
+import '../admin/components/admin_alert_banner.dart';
+import '../admin/dashboard/admin_dashboard_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -110,6 +112,23 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+
+  Widget _buildAdminAlert() {
+    final user = context.watch<UserProvider>().user;
+    if (user?.role == 'admin') {
+      return AdminAlertBanner(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AdminDashboardPage(),
+            ),
+          );
+        },
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildSearchBar() {
@@ -273,6 +292,7 @@ class _HomePageState extends State<HomePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildGreetingSection(),
+              _buildAdminAlert(),
               const SizedBox(height: 16),
               _buildSearchBar(),
               const SizedBox(height: 24),

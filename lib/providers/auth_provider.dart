@@ -36,22 +36,19 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       print('Starting registration for user: $email');
-      final userCredential = await _authService.registerWithEmailAndPassword(
-          email, password, fullName);
+      final userCredential = await _authService.register(
+        email,
+        password,
+        fullName,
+      );
 
       if (userCredential.user != null) {
         final uid = userCredential.user!.uid;
         print('FirebaseAuth user created successfully for: $email (UID: $uid)');
 
-        print('Attempting to create Firestore document for user: $email');
-        await _authService.createUserData(
-          uid: uid,
-          email: email,
-          fullName: fullName,
-        );
+        print('Registration successful for: $email');
       }
 
-      print('Registration and Firestore data creation successful for: $email');
       _isLoading = false;
       notifyListeners();
       return true;
