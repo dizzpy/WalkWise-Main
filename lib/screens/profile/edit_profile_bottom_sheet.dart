@@ -50,6 +50,8 @@ class _EditProfileBottomSheetState extends State<EditProfileBottomSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
+          // row for app bar
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -69,6 +71,8 @@ class _EditProfileBottomSheetState extends State<EditProfileBottomSheet> {
             ],
           ),
           const SizedBox(height: 24),
+
+          // email input box
           TextField(
             controller: _nameController,
             decoration: InputDecoration(
@@ -80,6 +84,8 @@ class _EditProfileBottomSheetState extends State<EditProfileBottomSheet> {
             ),
           ),
           const SizedBox(height: 16),
+
+          // input box to email
           TextField(
             controller: _emailController,
             enabled: false,
@@ -92,9 +98,10 @@ class _EditProfileBottomSheetState extends State<EditProfileBottomSheet> {
             ),
           ),
           const SizedBox(height: 24),
+
+          // save changes button
           CustomButton(
             onPressed: () {
-              // TODO: Implement save logic
               Navigator.pop(context);
             },
             text: 'Save Changes',
