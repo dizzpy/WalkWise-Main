@@ -8,6 +8,7 @@ class CustomTextField extends StatelessWidget {
   final Function(String)? onChanged;
   final String? Function(String?)? validator;
 
+  // constructpor
   const CustomTextField({
     Key? key,
     required this.controller,
