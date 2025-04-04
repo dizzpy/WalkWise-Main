@@ -48,7 +48,7 @@ lib/
    ```sh
    flutter run
    ```
-
+<!--   this is security -->
 ## 🛡️ Security
 - Firebase Security Rules
 - Role-based Access Control (Admin/User)
